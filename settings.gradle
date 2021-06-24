@@ -1,0 +1,3 @@
+rootProject.name = "Imgae Clone"
+include ':app'
+include ':openCVLibrary452'
