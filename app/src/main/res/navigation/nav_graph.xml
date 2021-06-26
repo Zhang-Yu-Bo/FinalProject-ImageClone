@@ -57,6 +57,21 @@
         <argument
             android:name="medias"
             app:argType="string[]" />
+        <action
+            android:id="@+id/action_gallery_to_result"
+            app:destination="@id/result_fragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/result_fragment"
+        android:name="com.example.imgaeclone.fragments.ResultFragment"
+        android:label="ResultFragment" >
+        <argument
+            android:name="media"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_result_to_camera"
+            app:destination="@id/camera_fragment" />
     </fragment>
 
 </navigation>

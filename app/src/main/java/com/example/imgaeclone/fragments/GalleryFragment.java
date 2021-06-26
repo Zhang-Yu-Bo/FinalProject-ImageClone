@@ -82,5 +82,10 @@ public class GalleryFragment extends Fragment {
             Navigation.findNavController(requireActivity(), R.id.fragment_container).navigateUp();
         });
 
+        view.findViewById(R.id.done_button).setOnClickListener(v -> {
+            Navigation.findNavController(requireActivity(), R.id.fragment_container)
+                    .navigate(GalleryFragmentDirections.actionGalleryToResult(mediaList.get(0).getAbsolutePath()));
+        });
+
     }
 }
