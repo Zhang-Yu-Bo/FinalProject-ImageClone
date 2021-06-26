@@ -1,26 +1,24 @@
 package com.example.imgaeclone;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
+import android.content.Context;
 import android.os.Bundle;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.os.Environment;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+
 import com.example.imgaeclone.databinding.ActivityMainBinding;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfKeyPoint;
-import org.opencv.features2d.Features2d;
-import org.opencv.features2d.SIFT;
-import org.opencv.imgproc.Imgproc;
+import androidx.camera.view.PreviewView;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
-
-    private ImageView imageView;
-    // make bitmap from image resource
-    private Bitmap inputImage;
-    private SIFT sift = SIFT.create();
+    private FrameLayout container;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -36,25 +34,37 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Example of a call to a native method
-        TextView tv = binding.sampleText;
-        tv.setText(stringFromJNI());
-
-        inputImage = BitmapFactory.decodeResource(getResources(), R.drawable.girl);
-        imageView = (ImageView) this.findViewById(R.id.imageView);
-        sift();
+        container = findViewById(R.id.fragment_container);
     }
 
-    public void sift() {
-        Mat rgba = new Mat();
-        Utils.bitmapToMat(inputImage, rgba);
-        MatOfKeyPoint keyPoints = new MatOfKeyPoint();
-        Imgproc.cvtColor(rgba, rgba, Imgproc.COLOR_RGBA2GRAY);
-        sift.detect(rgba, keyPoints);
-        Features2d.drawKeypoints(rgba, keyPoints, rgba);
-        Utils.matToBitmap(rgba, inputImage);
-        imageView.setImageBitmap(inputImage);
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Runnable fullscreenRunnable=new Runnable(){
+            @Override
+            public void run() {
+                // container. = ;
+                // container.setSystemUiVisibility(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowInsetsControllerCompat controller = ViewCompat.getWindowInsetsController(container);
+                controller.hide(WindowInsetsCompat.Type.statusBars());
+            }
+        };
+        container.postDelayed(fullscreenRunnable, 500);
+    }
+
+    public static File getOutputDirectory(Context context)  {
+        File[] mediaDir = context.getExternalFilesDirs(Environment.DIRECTORY_PICTURES);
+        if (mediaDir.length>0) {
+            File destDir = new File(mediaDir[0], context.getResources().getString(R.string.app_name));
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
+            return destDir;
+        }
+        else {
+            return context.getApplicationContext().getFilesDir();
+        }
     }
 
     /**

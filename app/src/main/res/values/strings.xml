@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Imgae Clone</string>
+    <string name="capture_button_alt">Capture</string>
 </resources>
