@@ -38,9 +38,9 @@
         android:name="com.example.imgaeclone.fragments.CameraFragment"
         android:label="CameraFragment" >
 
-<!--        <action-->
-<!--            android:id="@+id/action_camera_to_gallery"-->
-<!--            app:destination="@id/gallery_fragment" />-->
+        <action
+            android:id="@+id/action_camera_to_gallery"
+            app:destination="@id/gallery_fragment" />
 
         <action
             android:id="@+id/action_camera_to_permissions"
@@ -55,8 +55,8 @@
         android:name="com.example.imgaeclone.fragments.GalleryFragment"
         android:label="GalleryFragment" >
         <argument
-            android:name="root_directory"
-            app:argType="string" />
+            android:name="medias"
+            app:argType="string[]" />
     </fragment>
 
 </navigation>

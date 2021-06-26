@@ -2,6 +2,7 @@ package com.example.imgaeclone.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -62,6 +63,7 @@ public class CameraFragment extends Fragment {
     private ConstraintLayout container;
     private PreviewView viewFinder;
     private File outputDirectory;
+    private String[] imagePaths;
 
     private int displayId = -1;
     private int lensFacing = CameraSelector.LENS_FACING_BACK;
@@ -90,10 +92,12 @@ public class CameraFragment extends Fragment {
 //        displayManager.unregisterDisplayListener();
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         return inflater.inflate(R.layout.fragment_camera, container, false);
     }
 
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         container = (ConstraintLayout)view;
@@ -101,34 +105,6 @@ public class CameraFragment extends Fragment {
         cameraExecutor = Executors.newSingleThreadExecutor();
 
         displayManager = (DisplayManager) requireContext().getSystemService(Context.DISPLAY_SERVICE);
-//        windowManager = (WindowManager) requireContext().getSystemService(Context.WINDOW_SERVICE);
-//        windowManager = (WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE);
-//        windowManager = new WindowManager(view.getContext()) {
-//            @Override
-//            public void addView(View view, ViewGroup.LayoutParams params) {
-//
-//            }
-//
-//            @Override
-//            public void updateViewLayout(View view, ViewGroup.LayoutParams params) {
-//
-//            }
-//
-//            @Override
-//            public void removeView(View view) {
-//
-//            }
-//
-//            @Override
-//            public Display getDefaultDisplay() {
-//                return null;
-//            }
-//
-//            @Override
-//            public void removeViewImmediate(View view) {
-//
-//            }
-//        };
         outputDirectory = MainActivity.getOutputDirectory(requireContext());
 
         viewFinder.post(() -> {
@@ -201,6 +177,58 @@ public class CameraFragment extends Fragment {
         return AspectRatio.RATIO_16_9;
     }
 
+    private void takePictures(int times) {
+        File photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION);
+        ImageCapture.Metadata metadata = new ImageCapture.Metadata();
+        ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile)
+                .setMetadata(metadata)
+                .build();
+        imageCapture.takePicture(outputOptions, cameraExecutor, new ImageCapture.OnImageSavedCallback() {
+            @Override
+            public void onImageSaved(@NonNull @NotNull ImageCapture.OutputFileResults output) {
+                Uri savedUri = output.getSavedUri();
+                if (savedUri == null) savedUri = Uri.fromFile(photoFile);
+                Log.d(TAG, "Photo capture succeeded: " + savedUri);
+
+                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("jpg");
+
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                    requireActivity().sendBroadcast(
+                            new Intent(android.hardware.Camera.ACTION_NEW_PICTURE, savedUri)
+                    );
+                }
+                MediaScannerConnection.scanFile(getContext(), new String[]{savedUri.toString()}, new String[]{mimeType}, (path, uri) -> {
+                    Log.i("ExternalStorage", "Scanned " + path);
+                });
+                imagePaths[times - 1] = photoFile.getAbsolutePath();
+                if (times == 1) {
+                    container.postDelayed(
+                            () -> {
+                                findNavController(getParentFragment()).navigate(
+                                        CameraFragmentDirections.actionCameraToGallery(imagePaths)
+                                );
+                            }
+                            , 100);
+                }
+                else{
+                    takePictures(times - 1);
+                }
+            }
+
+            @Override
+            public void onError(@NonNull @NotNull ImageCaptureException exception) {
+                Log.e(TAG, "Photo capture failed: ", exception);
+            }
+        });
+        // We can only change the foreground Drawable using API level 23+ API
+        container.postDelayed(
+                () -> {
+                    container.setForeground(new ColorDrawable(Color.WHITE));
+                    container.postDelayed(() -> container.setForeground(null), 100);
+                }
+                , 100);
+    }
+
     private void updateCameraUi() {
         ConstraintLayout uiLayout = container.findViewById(R.id.camera_ui_container);
         if (uiLayout != null) {
@@ -212,41 +240,8 @@ public class CameraFragment extends Fragment {
         controls.findViewById(R.id.camera_capture_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION);
-                ImageCapture.Metadata metadata = new ImageCapture.Metadata();
-                ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile)
-                        .setMetadata(metadata)
-                        .build();
-                imageCapture.takePicture(outputOptions, cameraExecutor, new ImageCapture.OnImageSavedCallback() {
-                    @Override
-                    public void onImageSaved(@NonNull @NotNull ImageCapture.OutputFileResults output) {
-                        Uri savedUri = output.getSavedUri();
-                        if (savedUri == null) savedUri = Uri.fromFile(photoFile);
-                        Log.d(TAG, "Photo capture succeeded: " + savedUri);
-
-                        // val mimeType = MimeTypeMap.getSingleton()
-                        //             .getMimeTypeFromExtension(savedUri.().extension);
-                        // MediaScannerConnection.scanFile(
-                        //         context,
-                        //         arrayOf(savedUri.toFile().absolutePath),
-                        //         arrayOf(mimeType)
-                        // ) { _, uri ->
-                        //         Log.d(TAG, "Image capture scanned into media store: $uri")
-                        // }
-                    }
-
-                    @Override
-                    public void onError(@NonNull @NotNull ImageCaptureException exception) {
-                        Log.e(TAG, "Photo capture failed: ", exception);
-                    }
-                });
-                // We can only change the foreground Drawable using API level 23+ API
-                container.postDelayed(
-                        () -> {
-                            container.setForeground(new ColorDrawable(Color.WHITE));
-                            container.postDelayed(() -> container.setForeground(null), 100);
-                        }
-                        , 100);
+                imagePaths = new String[3];
+                takePictures(3);
             }
         });
     }
