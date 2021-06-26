@@ -112,8 +112,8 @@ public class ExposureFusion {
             }
 
             brightness = 1 - brightness;
-            brightness = (brightness > 1) ? 1 : brightness;
-            brightness = (brightness <= 0) ? 1e-12 : brightness;
+            brightness = (brightness >= 1) ? 1 : brightness;
+            brightness = (brightness <= 0) ? 0.1 : brightness;
             // normalize
             result.convertTo(result, CV_8UC4, (1.0 / brightness));
 
@@ -291,8 +291,14 @@ public class ExposureFusion {
             Core.split(pyramid.get(i), pyramidRGB);
             Core.split(dst, dstRGB);
             int numOfChannels = Math.min(3, Math.min(pyramidRGB.size(), dstRGB.size()));
-            for (int c = 0; c < numOfChannels; c++)
+            for (int c = 0; c < numOfChannels; c++) {
+                // Negative value type
+                pyramidRGB.get(c).convertTo(pyramidRGB.get(c), CV_32FC1);
+                dstRGB.get(c).convertTo(dstRGB.get(c), CV_32FC1);
                 Core.subtract(pyramidRGB.get(c), dstRGB.get(c), pyramidRGB.get(c));
+            }
+            pyramidRGB.get(pyramidRGB.size()-1).convertTo(pyramidRGB.get(pyramidRGB.size()-1), CV_32FC1);
+            dstRGB.get(dstRGB.size()-1).convertTo(dstRGB.get(dstRGB.size()-1), CV_32FC1);
 
             Core.merge(pyramidRGB, pyramid.get(i));
         }
