@@ -10,6 +10,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.AlignMTB;
+import org.opencv.photo.Photo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +71,9 @@ public class ExposureFusion {
                 }
             }
             pyrDepth = pyrDepth <= 0 ? 1 : pyrDepth;
+
+            AlignMTB mtb = Photo.createAlignMTB();
+            mtb.process(images, images);
 
             List<Mat> weightMaps = computeWeight(images, wContrast, wSaturation, wExposedness);
             List<List<Mat>> pyrWeightMaps = new ArrayList<>();

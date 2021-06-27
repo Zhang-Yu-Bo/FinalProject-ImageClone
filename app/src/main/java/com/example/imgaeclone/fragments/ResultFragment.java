@@ -55,8 +55,8 @@ public class ResultFragment extends Fragment {
                 super.handleMessage(msg);
                 if (msg.getData().getString("status").equals("success")) {
                     dialog.cancel();
-//                    Mat result = ExposureFusion.getResult();
-//                    imageView.setImageBitmap(matToBitmap(result));
+                    Mat result = ExposureFusion.getResult();
+                    imageView.setImageBitmap(matToBitmap(result));
 //                    File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
 //                    Imgcodecs.imwrite(resultFile.getAbsolutePath(), result);
 //                    Glide.with(view).load(result).into(imageView);
@@ -82,7 +82,7 @@ public class ResultFragment extends Fragment {
         for (Bitmap bitmap: bitmaps) {
             Mat mat = new Mat();
             Utils.bitmapToMat(bitmap, mat);
-            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGRA);
+            //Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGRA);
             mats.add(mat);
         }
         ExposureFusion.Init(mats, 1, 1, 1, 1, 0);
