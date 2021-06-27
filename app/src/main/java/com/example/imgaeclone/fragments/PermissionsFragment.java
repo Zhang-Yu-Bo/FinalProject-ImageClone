@@ -15,7 +15,10 @@ import static androidx.navigation.fragment.NavHostFragment.findNavController;
 public class PermissionsFragment extends Fragment {
 
     static final int PERMISSIONS_REQUEST_CODE = 10445;
-    static final String[] PERMISSIONS_REQUIRED = {Manifest.permission.CAMERA};
+    static final String[] PERMISSIONS_REQUIRED = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
 
     @Override

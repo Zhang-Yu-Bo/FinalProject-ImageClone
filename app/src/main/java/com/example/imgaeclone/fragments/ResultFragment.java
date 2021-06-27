@@ -3,6 +3,7 @@ package com.example.imgaeclone.fragments;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -66,11 +68,24 @@ public class ResultFragment extends Fragment {
         view.findViewById(R.id.result_done_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
-                //Imgproc.cvtColor(result, result, Imgproc.COLOR_RGB2BGRA);
+                //File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
+                File resultFile = CameraFragment.createFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+                Imgproc.cvtColor(result, result, Imgproc.COLOR_RGB2BGRA);
                 Imgcodecs.imwrite(resultFile.getAbsolutePath(), result);
                 Navigation.findNavController(ResultFragment.this.requireActivity(), R.id.fragment_container)
                         .navigate(ResultFragmentDirections.actionResultToCamera());
+                Toast.makeText(getContext(), "Save at: "+resultFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+                // remove temp file
+                resultFile = MainActivity.getOutputDirectory(getContext());
+                if (resultFile.isDirectory()) {
+                    String[] children = resultFile.list();
+                    if (children != null) {
+                        for (String i : children) {
+                            new File(resultFile, i).delete();
+                        }
+                    }
+                }
             }
         });
     }
