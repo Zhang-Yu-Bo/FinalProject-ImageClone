@@ -14,13 +14,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Range;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.WindowMetrics;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
@@ -28,7 +25,6 @@ import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraInfoUnavailableException;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ExposureState;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
@@ -38,7 +34,6 @@ import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
 import com.example.imgaeclone.MainActivity;
 import com.example.imgaeclone.R;
@@ -47,7 +42,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -260,9 +254,13 @@ public class CameraFragment extends Fragment {
     }
 
     @SuppressLint({"NewApi", "LocalSuppress"})
-    private File createFile(File baseFolder, String format, String extension) {
+    static public File createFile(File baseFolder, String format, String extension) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(format, java.util.Locale.getDefault());
         return new File(baseFolder, dateFormat.format(System.currentTimeMillis()) + extension);
+    }
+
+    static public File createFile(File baseFolder) {
+        return createFile(baseFolder, FILENAME, PHOTO_EXTENSION);
     }
 
 }

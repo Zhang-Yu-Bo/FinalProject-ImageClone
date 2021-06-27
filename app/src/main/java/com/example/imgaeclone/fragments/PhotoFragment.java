@@ -32,10 +32,10 @@ public class PhotoFragment extends Fragment {
     }
 
 
-    static Fragment create(File image){
+    static Fragment create(String path){
         PhotoFragment photoFragment = new PhotoFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(FILE_NAME_KEY, image.getAbsolutePath());
+        bundle.putString(FILE_NAME_KEY, path);
         photoFragment.setArguments(bundle);
         return photoFragment;
     }

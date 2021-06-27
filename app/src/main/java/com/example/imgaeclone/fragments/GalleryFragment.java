@@ -20,14 +20,11 @@ import com.example.imgaeclone.R;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class GalleryFragment extends Fragment {
 
-    private List<File> mediaList = new ArrayList<>();
+    private Bitmap[] mediaList;
+    private String[] filePaths;
 
     class MediaPagerAdapter extends FragmentStatePagerAdapter {
         public MediaPagerAdapter(@NonNull @NotNull FragmentManager fm) {
@@ -38,12 +35,12 @@ public class GalleryFragment extends Fragment {
         @NotNull
         @Override
         public Fragment getItem(int position) {
-            return PhotoFragment.create(mediaList.get(getCount() - position - 1));
+            return PhotoFragment.create(filePaths[getCount() - position - 1]);
         }
 
         @Override
         public int getCount() {
-            return mediaList.size();
+            return filePaths.length;
         }
     }
 
@@ -52,10 +49,11 @@ public class GalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         boolean retainInstance = true;
 
-        String[] filePaths = GalleryFragmentArgs.fromBundle(getArguments()).getMedias();
+        filePaths = GalleryFragmentArgs.fromBundle(getArguments()).getMedias();
+        mediaList = new Bitmap[filePaths.length];
+        int i = 0;
         for (String filePath : filePaths) {
-            Log.d("DEBUG: ", filePath);
-            mediaList.add(new File(filePath));
+            mediaList[i++] = BitmapFactory.decodeFile(filePath);
         }
     }
 
@@ -82,9 +80,8 @@ public class GalleryFragment extends Fragment {
         });
 
         view.findViewById(R.id.done_button).setOnClickListener(v -> {
-            Bitmap bitmap = BitmapFactory.decodeFile(mediaList.get(0).getAbsolutePath());
             Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                    .navigate(GalleryFragmentDirections.actionGalleryToResult(bitmap));
+                    .navigate(GalleryFragmentDirections.actionGalleryToResult(mediaList));
         });
 
     }
