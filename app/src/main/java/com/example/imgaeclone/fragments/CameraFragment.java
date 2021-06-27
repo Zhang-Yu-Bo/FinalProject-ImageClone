@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Range;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraInfoUnavailableException;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExposureState;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
@@ -76,6 +78,11 @@ public class CameraFragment extends Fragment {
 
     private DisplayManager displayManager;
     private ExecutorService cameraExecutor;
+
+    private int exposureTimeTimes;
+    private int needPictureCount = 3;
+    private int middleExposureTimeIndex;
+    private int[] exposureTimeIndexes = {-6, 0, 6};
 
     @Override
     public void onResume() {
@@ -177,7 +184,9 @@ public class CameraFragment extends Fragment {
         return AspectRatio.RATIO_16_9;
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     private void takePictures(int times) {
+        camera.getCameraControl().setExposureCompensationIndex(exposureTimeIndexes[times - 1]);
         File photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION);
         ImageCapture.Metadata metadata = new ImageCapture.Metadata();
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile)
@@ -208,7 +217,7 @@ public class CameraFragment extends Fragment {
                                         CameraFragmentDirections.actionCameraToGallery(imagePaths)
                                 );
                             }
-                            , 100);
+                            , 200);
                 }
                 else{
                     takePictures(times - 1);
@@ -223,10 +232,10 @@ public class CameraFragment extends Fragment {
         // We can only change the foreground Drawable using API level 23+ API
         container.postDelayed(
                 () -> {
-                    container.setForeground(new ColorDrawable(Color.WHITE));
-                    container.postDelayed(() -> container.setForeground(null), 100);
+                    container.setForeground(new ColorDrawable(Color.BLACK));
+                    container.postDelayed(() -> container.setForeground(null), 50);
                 }
-                , 100);
+                , 500);
     }
 
     private void updateCameraUi() {
@@ -240,8 +249,12 @@ public class CameraFragment extends Fragment {
         controls.findViewById(R.id.camera_capture_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                imagePaths = new String[3];
-                takePictures(3);
+                // need set exposureTimeIndexes
+                // ExposureState exposureState = camera.getCameraInfo().getExposureState();
+                // if (!exposureState.isExposureCompensationSupported()) return;
+                // Range<Integer> range = exposureState.getExposureCompensationRange();
+                imagePaths = new String[needPictureCount];
+                takePictures(needPictureCount);
             }
         });
     }

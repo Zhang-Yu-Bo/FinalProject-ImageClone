@@ -5,12 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.example.imgaeclone.databinding.ActivityMainBinding;
 
-import androidx.camera.view.PreviewView;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -44,10 +42,9 @@ public class MainActivity extends AppCompatActivity {
         Runnable fullscreenRunnable=new Runnable(){
             @Override
             public void run() {
-                // container. = ;
-                // container.setSystemUiVisibility(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 WindowInsetsControllerCompat controller = ViewCompat.getWindowInsetsController(container);
-                controller.hide(WindowInsetsCompat.Type.statusBars());
+                controller.hide(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
+                controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         };
         container.postDelayed(fullscreenRunnable, 500);

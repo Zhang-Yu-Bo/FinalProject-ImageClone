@@ -39,7 +39,7 @@ public class GalleryFragment extends Fragment {
         @NotNull
         @Override
         public Fragment getItem(int position) {
-            return PhotoFragment.create(mediaList.get(position));
+            return PhotoFragment.create(mediaList.get(getCount() - position - 1));
         }
 
         @Override
