@@ -72,6 +72,7 @@ public class ResultFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
+                Imgproc.cvtColor(result, result, Imgproc.COLOR_RGB2BGRA);
                 Imgcodecs.imwrite(resultFile.getAbsolutePath(), result);
                 Navigation.findNavController(ResultFragment.this.requireActivity(), R.id.fragment_container)
                         .navigate(ResultFragmentDirections.actionResultToCamera());
@@ -92,7 +93,6 @@ public class ResultFragment extends Fragment {
             Mat mat = new Mat();
             Utils.bitmapToMat(bitmap, mat);
             Imgproc.resize(mat, mat, new Size(mat.width() / 2, mat.height() / 2));
-            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGRA);
             mats.add(mat);
         }
         ExposureFusion.Init(mats, 1, 1, 1, 1, 0);
