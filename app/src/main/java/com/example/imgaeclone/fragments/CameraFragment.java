@@ -81,6 +81,24 @@ public class CameraFragment extends Fragment {
     private int middleExposureTimeIndex;
     private int[] exposureIndexes = {-6, 0, 6};
 
+    private DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener() {
+        @Override
+        public void onDisplayAdded(int displayId) {}
+
+        @Override
+        public void onDisplayRemoved(int displayId) {}
+
+        @Override
+        public void onDisplayChanged(int _displayId) {
+            if (_displayId == displayId) {
+                if (imageCapture != null) {
+                    Log.d(TAG, "Rotation changed: " + String.valueOf(getView().getDisplay().getRotation()));
+                    imageCapture.setTargetRotation(getView().getDisplay().getRotation());
+                }
+            }
+        }
+    };
+
     @Override
     public void onResume() {
         super.onResume();
@@ -93,7 +111,7 @@ public class CameraFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         cameraExecutor.shutdown();
-//        displayManager.unregisterDisplayListener();
+        displayManager.unregisterDisplayListener(displayListener);
     }
 
     @Override
@@ -135,6 +153,7 @@ public class CameraFragment extends Fragment {
         cameraExecutor = Executors.newSingleThreadExecutor();
 
         displayManager = (DisplayManager) requireContext().getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(displayListener, null);
         outputDirectory = MainActivity.getOutputDirectory(requireContext());
 
         viewFinder.post(() -> {
@@ -274,10 +293,11 @@ public class CameraFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // need set exposureTimeIndexes
-                 ExposureState exposureState = camera.getCameraInfo().getExposureState();
-                 if (!exposureState.isExposureCompensationSupported()) return;
-                 Range<Integer> range = exposureState.getExposureCompensationRange();
+                ExposureState exposureState = camera.getCameraInfo().getExposureState();
+                if (!exposureState.isExposureCompensationSupported()) return;
+                Range<Integer> range = exposureState.getExposureCompensationRange();
                 exposureIndexes[0] = range.getLower();
+                exposureIndexes[1]= (range.getLower() + range.getUpper()) / 2;
                 exposureIndexes[2] = range.getUpper();
                 imagePaths = new String[needPictureCount];
                 takePictures(needPictureCount);
