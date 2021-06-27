@@ -68,7 +68,7 @@
         android:label="ResultFragment" >
         <argument
             android:name="media"
-            app:argType="string" />
+            app:argType="android.graphics.Bitmap" />
         <action
             android:id="@+id/action_result_to_camera"
             app:destination="@id/camera_fragment" />

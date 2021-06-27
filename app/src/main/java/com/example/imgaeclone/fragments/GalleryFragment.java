@@ -1,12 +1,12 @@
 package com.example.imgaeclone.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -16,7 +16,6 @@ import androidx.navigation.Navigation;
 import androidx.viewpager.widget.ViewPager;
 
 
-import com.bumptech.glide.Glide;
 import com.example.imgaeclone.R;
 
 import org.jetbrains.annotations.NotNull;
@@ -83,8 +82,9 @@ public class GalleryFragment extends Fragment {
         });
 
         view.findViewById(R.id.done_button).setOnClickListener(v -> {
+            Bitmap bitmap = BitmapFactory.decodeFile(mediaList.get(0).getAbsolutePath());
             Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                    .navigate(GalleryFragmentDirections.actionGalleryToResult(mediaList.get(0).getAbsolutePath()));
+                    .navigate(GalleryFragmentDirections.actionGalleryToResult(bitmap));
         });
 
     }

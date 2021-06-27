@@ -1,5 +1,6 @@
 package com.example.imgaeclone.fragments;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,8 +29,9 @@ public class ResultFragment extends Fragment {
 
         ImageView imageView = (ImageView)view.findViewById(R.id.result_img_view);
 
-        File resource = new File(ResultFragmentArgs.fromBundle(getArguments()).getMedia());
-        Glide.with(view).load(resource).into(imageView);
+        // File resource = new File();
+        Bitmap image = ResultFragmentArgs.fromBundle(getArguments()).getMedia();
+        Glide.with(view).load(image).into(imageView);
 
         view.findViewById(R.id.result_back_button).setOnClickListener(v -> {
             Navigation.findNavController(requireActivity(), R.id.fragment_container).navigateUp();

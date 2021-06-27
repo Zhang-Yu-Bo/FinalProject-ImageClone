@@ -217,7 +217,7 @@ public class CameraFragment extends Fragment {
                                         CameraFragmentDirections.actionCameraToGallery(imagePaths)
                                 );
                             }
-                            , 200);
+                            , 100);
                 }
                 else{
                     takePictures(times - 1);
@@ -232,10 +232,10 @@ public class CameraFragment extends Fragment {
         // We can only change the foreground Drawable using API level 23+ API
         container.postDelayed(
                 () -> {
-                    container.setForeground(new ColorDrawable(Color.BLACK));
-                    container.postDelayed(() -> container.setForeground(null), 50);
+                    container.setForeground(new ColorDrawable(Color.WHITE));
+                    container.postDelayed(() -> container.setForeground(null), 80);
                 }
-                , 500);
+                , 1000);
     }
 
     private void updateCameraUi() {
