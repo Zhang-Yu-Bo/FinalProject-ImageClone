@@ -13,6 +13,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
+import org.opencv.core.Mat;
+
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {

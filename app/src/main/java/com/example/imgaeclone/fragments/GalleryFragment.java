@@ -16,14 +16,20 @@ import androidx.navigation.Navigation;
 import androidx.viewpager.widget.ViewPager;
 
 
+import com.example.imgaeclone.MainActivity;
 import com.example.imgaeclone.R;
 
 import org.jetbrains.annotations.NotNull;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.List;
 
 
 public class GalleryFragment extends Fragment {
 
-    private Bitmap[] mediaList;
+    private long[] mediaAddrs;
     private String[] filePaths;
 
     class MediaPagerAdapter extends FragmentStatePagerAdapter {
@@ -50,11 +56,6 @@ public class GalleryFragment extends Fragment {
         boolean retainInstance = true;
 
         filePaths = GalleryFragmentArgs.fromBundle(getArguments()).getMedias();
-        mediaList = new Bitmap[filePaths.length];
-        int i = 0;
-        for (String filePath : filePaths) {
-            mediaList[i++] = BitmapFactory.decodeFile(filePath);
-        }
     }
 
     @Override
@@ -81,7 +82,7 @@ public class GalleryFragment extends Fragment {
 
         view.findViewById(R.id.done_button).setOnClickListener(v -> {
             Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                    .navigate(GalleryFragmentDirections.actionGalleryToResult(mediaList));
+                    .navigate(GalleryFragmentDirections.actionGalleryToResult(filePaths));
         });
 
     }

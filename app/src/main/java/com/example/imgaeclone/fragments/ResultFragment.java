@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
-import com.bumptech.glide.Glide;
 import com.example.imgaeclone.ExposureFusion;
 import com.example.imgaeclone.MainActivity;
 import com.example.imgaeclone.R;
@@ -34,7 +33,7 @@ import java.util.List;
 
 public class ResultFragment extends Fragment {
 
-    Mat result;
+    Mat result = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,25 +45,21 @@ public class ResultFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ImageView imageView = view.findViewById(R.id.result_img_view);
+        String[] mediaPath = ResultFragmentArgs.fromBundle(getArguments()).getMedia();
 
-        Bitmap[] bitmaps = ResultFragmentArgs.fromBundle(getArguments()).getMedia();
         ProgressDialog dialog = ProgressDialog.show(getContext(), "", "Computing. Please wait...", true);
 
-        Mat mat = new Mat();
-        Utils.bitmapToMat(bitmaps[0], mat);
-
-//        Glide.with(view).load(mat).into(imageView);
-        GenerateResult(bitmaps, new Handler(Looper.getMainLooper()){
+        GenerateResult(mediaPath, new Handler(Looper.getMainLooper()){
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 if (msg.getData().getString("status").equals("success")) {
                     dialog.cancel();
                     result = ExposureFusion.getResult();
                     imageView.setImageBitmap(matToBitmap(result));
-//                    Glide.with(view).load(result).into(imageView);
                 }
             }
         });
+
 
         view.findViewById(R.id.result_back_button).setOnClickListener(v -> Navigation.findNavController(requireActivity(), R.id.fragment_container).navigateUp());
 
@@ -72,7 +67,7 @@ public class ResultFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
-                Imgproc.cvtColor(result, result, Imgproc.COLOR_RGB2BGRA);
+                //Imgproc.cvtColor(result, result, Imgproc.COLOR_RGB2BGRA);
                 Imgcodecs.imwrite(resultFile.getAbsolutePath(), result);
                 Navigation.findNavController(ResultFragment.this.requireActivity(), R.id.fragment_container)
                         .navigate(ResultFragmentDirections.actionResultToCamera());
@@ -81,18 +76,19 @@ public class ResultFragment extends Fragment {
     }
 
     private Bitmap matToBitmap(Mat mat) {
-
         Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat, bitmap);
         return bitmap;
     }
 
-    private void GenerateResult(Bitmap[] bitmaps, Handler handler) {
+    private void GenerateResult(String[] mediaPath, Handler handler) {
         List<Mat> mats = new ArrayList<>();
-        for (Bitmap bitmap: bitmaps) {
-            Mat mat = new Mat();
+        for (int i = 0; i < mediaPath.length; i++) {
+            Mat mat = Imgcodecs.imread(mediaPath[i]);
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGRA);
+            Bitmap bitmap = matToBitmap(mat);
             Utils.bitmapToMat(bitmap, mat);
-            Imgproc.resize(mat, mat, new Size(mat.width() / 2, mat.height() / 2));
+            Imgproc.resize(mat, mat, new Size(mat.width() / 4, mat.height() / 4));
             mats.add(mat);
         }
         ExposureFusion.Init(mats, 1, 1, 1, 1, 0);
