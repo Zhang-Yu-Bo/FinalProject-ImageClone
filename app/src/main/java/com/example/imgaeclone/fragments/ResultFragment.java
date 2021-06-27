@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.example.imgaeclone.R;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -31,6 +33,8 @@ import java.util.List;
 
 
 public class ResultFragment extends Fragment {
+
+    Mat result;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -55,10 +59,8 @@ public class ResultFragment extends Fragment {
                 super.handleMessage(msg);
                 if (msg.getData().getString("status").equals("success")) {
                     dialog.cancel();
-//                    Mat result = ExposureFusion.getResult();
-//                    imageView.setImageBitmap(matToBitmap(result));
-//                    File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
-//                    Imgcodecs.imwrite(resultFile.getAbsolutePath(), result);
+                    result = ExposureFusion.getResult();
+                    imageView.setImageBitmap(matToBitmap(result));
 //                    Glide.with(view).load(result).into(imageView);
                 }
             }
@@ -66,8 +68,15 @@ public class ResultFragment extends Fragment {
 
         view.findViewById(R.id.result_back_button).setOnClickListener(v -> Navigation.findNavController(requireActivity(), R.id.fragment_container).navigateUp());
 
-        view.findViewById(R.id.result_done_button).setOnClickListener(v -> Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                .navigate(ResultFragmentDirections.actionResultToCamera()));
+        view.findViewById(R.id.result_done_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File resultFile = CameraFragment.createFile(MainActivity.getOutputDirectory(getContext()));
+                Imgcodecs.imwrite(resultFile.getAbsolutePath(), result);
+                Navigation.findNavController(ResultFragment.this.requireActivity(), R.id.fragment_container)
+                        .navigate(ResultFragmentDirections.actionResultToCamera());
+            }
+        });
     }
 
     private Bitmap matToBitmap(Mat mat) {
@@ -82,6 +91,7 @@ public class ResultFragment extends Fragment {
         for (Bitmap bitmap: bitmaps) {
             Mat mat = new Mat();
             Utils.bitmapToMat(bitmap, mat);
+            Imgproc.resize(mat, mat, new Size(mat.width() / 2, mat.height() / 2));
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2BGRA);
             mats.add(mat);
         }
