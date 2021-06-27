@@ -14,6 +14,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Range;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,7 @@ import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraInfoUnavailableException;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExposureState;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
@@ -76,7 +79,7 @@ public class CameraFragment extends Fragment {
     private int exposureTimeTimes;
     private int needPictureCount = 3;
     private int middleExposureTimeIndex;
-    private int[] exposureTimeIndexes = {-6, 0, 6};
+    private int[] exposureIndexes = {-6, 0, 6};
 
     @Override
     public void onResume() {
@@ -103,6 +106,32 @@ public class CameraFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         container = (ConstraintLayout)view;
         viewFinder = container.findViewById(R.id.view_finder);
+//        viewFinder.setOnDragListener(new View.OnDragListener() {
+//            @Override
+//            public boolean onDrag(View v, DragEvent event) {
+//                switch (event.getAction()) {
+//                    case DragEvent.ACTION_DRAG_ENTERED:
+//                        v.posi
+//                        event.getY();
+//                        v.setBackground(getResources().getDrawable(R.drawable.container_dropped));
+//                        break;
+//                    case DragEvent.ACTION_DRAG_EXITED:
+//                        v.setBackground(getResources().getDrawable(R.drawable.container));
+//                        break;
+//                    case DragEvent.ACTION_DROP:
+//                        View a = (View)event.getLocalState();
+//                        ViewGroup parent = (ViewGroup)a.getParent();
+//                        parent.removeView(a);
+//                        LinearLayout ll = (LinearLayout)v;
+//                        ll.addView(a);
+//                        a.setVisibility(View.VISIBLE);
+//                        break;
+//                    case DragEvent.ACTION_DRAG_ENDED:
+//                        v.setBackground(getResources().getDrawable(R.drawable.container));
+//                }
+//                return false;
+//            }
+//        });
         cameraExecutor = Executors.newSingleThreadExecutor();
 
         displayManager = (DisplayManager) requireContext().getSystemService(Context.DISPLAY_SERVICE);
@@ -127,12 +156,13 @@ public class CameraFragment extends Fragment {
             try {
                 cameraProvider = cameraProviderFuture.get();
 
+                lensFacing = CameraSelector.LENS_FACING_BACK;
                 if (!cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)){
                     if (cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)) {
                         lensFacing = CameraSelector.LENS_FACING_FRONT;
                     }
                 }
-            } catch (ExecutionException | CameraInfoUnavailableException | InterruptedException e) {
+            } catch (ExecutionException | InterruptedException | CameraInfoUnavailableException e) {
                 Log.e(TAG, "set up camera failed", e);
             }
             bindCameraUseCases();
@@ -180,7 +210,7 @@ public class CameraFragment extends Fragment {
 
     @SuppressLint("UnsafeOptInUsageError")
     private void takePictures(int times) {
-        camera.getCameraControl().setExposureCompensationIndex(exposureTimeIndexes[times - 1]);
+        camera.getCameraControl().setExposureCompensationIndex(exposureIndexes[times - 1]);
         File photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION);
         ImageCapture.Metadata metadata = new ImageCapture.Metadata();
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile)
@@ -224,12 +254,12 @@ public class CameraFragment extends Fragment {
             }
         });
         // We can only change the foreground Drawable using API level 23+ API
-        container.postDelayed(
-                () -> {
-                    container.setForeground(new ColorDrawable(Color.WHITE));
-                    container.postDelayed(() -> container.setForeground(null), 80);
-                }
-                , 1000);
+//        container.postDelayed(
+//                () -> {
+//                    container.setForeground(new ColorDrawable(Color.WHITE));
+//                    container.postDelayed(() -> container.setForeground(null), 80);
+//                }
+//                , 1000);
     }
 
     private void updateCameraUi() {
@@ -244,9 +274,11 @@ public class CameraFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // need set exposureTimeIndexes
-                // ExposureState exposureState = camera.getCameraInfo().getExposureState();
-                // if (!exposureState.isExposureCompensationSupported()) return;
-                // Range<Integer> range = exposureState.getExposureCompensationRange();
+                 ExposureState exposureState = camera.getCameraInfo().getExposureState();
+                 if (!exposureState.isExposureCompensationSupported()) return;
+                 Range<Integer> range = exposureState.getExposureCompensationRange();
+                exposureIndexes[0] = range.getLower();
+                exposureIndexes[2] = range.getUpper();
                 imagePaths = new String[needPictureCount];
                 takePictures(needPictureCount);
             }
